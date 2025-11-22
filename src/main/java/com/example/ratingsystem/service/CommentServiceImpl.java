@@ -3,12 +3,13 @@ package com.example.ratingsystem.service;
 import com.example.ratingsystem.dto.CommentCreateRequest;
 import com.example.ratingsystem.dto.CommentResponse;
 import com.example.ratingsystem.exception.BadRequestException;
+import com.example.ratingsystem.exception.ResourceNotFoundException;
 import com.example.ratingsystem.model.Comment;
+import com.example.ratingsystem.model.Role;
 import com.example.ratingsystem.model.SellerStatus;
 import com.example.ratingsystem.model.User;
 import com.example.ratingsystem.repository.CommentRepository;
 import com.example.ratingsystem.repository.UserRepository;
-import com.example.ratingsystem.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,60 +19,71 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     @Override
-    public void addComment(Long sellerId, CommentCreateRequest request) {
-
-        // 1) იპოვე seller
+    public CommentResponse createComment(Long sellerId, CommentCreateRequest request) {
+        // 1) მოვძებნოთ სელერი
         User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + sellerId));
+
+        // 2) შევამოწმოთ რომ ის რეალურად SELLER-ია და APPROVED
+        if (seller.getRole() != Role.SELLER) {
+            throw new BadRequestException("User with id " + sellerId + " is not a seller");
+        }
 
         if (seller.getSellerStatus() != SellerStatus.APPROVED) {
-            throw new BadRequestException("Seller is not approved");
+            throw new BadRequestException("Seller with id " + sellerId + " is not approved");
         }
 
-        // 2️⃣ User cannot comment on themselves
-        if (request.getAuthorId() != null && sellerId.equals(request.getAuthorId())) {
-            throw new BadRequestException("You cannot comment yourself");
-        }
-
-        // 3️⃣ Rating boundaries (DTO already checks, but double-check optional)
-        if (request.getRating() < 1 || request.getRating() > 5) {
+        // 3) მარტივი ვალიდაცია rating-ზე
+        if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
             throw new BadRequestException("Rating must be between 1 and 5");
         }
 
+        if (request.getAuthorId() == null) {
+            throw new BadRequestException("AuthorId is required");
+        }
 
-        // 2) შექმენი ახალი კომენტარი
+        // 4) შევქმნათ Comment ენტიტი
         Comment comment = Comment.builder()
                 .message(request.getMessage())
-                .authorId(request.getAuthorId())   // null allowed
+                .rating(request.getRating())
+                .authorId(request.getAuthorId())
                 .seller(seller)
-                .approved(false)                  // default — awaits admin approval
+                .approved(false) // admin-ს უნდა დაადასტუროს
                 .build();
 
-        // 3) შეინახე კომენტარი
-        commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
+
+        // 5) დავაბრუნოთ DTO
+        return mapToCommentResponse(saved);
     }
 
     @Override
-    public List<CommentResponse> getApprovedComments(Long sellerId) {
-
+    public List<CommentResponse> getApprovedCommentsForSeller(Long sellerId) {
         User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("Seller not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + sellerId));
 
-        List<Comment> comments =
-                commentRepository.findAllBySellerAndApprovedTrue(seller);
+        List<Comment> comments = commentRepository.findAllBySellerAndApprovedTrue(seller);
 
-        // 3) Comment → CommentResponse mapping
         return comments.stream()
-                .map(c -> CommentResponse.builder()
-                        .id(c.getId())
-                        .message(c.getMessage())
-                        .authorId(c.getAuthorId())
-                        .createdAt(c.getCreatedAt())
-                        .build())
+                .map(this::mapToCommentResponse)
                 .toList();
+    }
+
+    // ================== private helper ==================
+
+    private CommentResponse mapToCommentResponse(Comment comment) {
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .message(comment.getMessage())
+                .rating(comment.getRating())
+                .authorId(comment.getAuthorId())
+                .sellerId(comment.getSeller().getId())
+                .approved(comment.isApproved())
+                .createdAt(comment.getCreatedAt())
+                .build();
     }
 }

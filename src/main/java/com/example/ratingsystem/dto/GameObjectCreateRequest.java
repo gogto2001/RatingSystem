@@ -10,4 +10,7 @@ public class GameObjectCreateRequest {
 
     @NotBlank(message = "Text cannot be empty")
     private String text;
+
+    private Long sellerId; // რომელი seller ქმნის
 }
+

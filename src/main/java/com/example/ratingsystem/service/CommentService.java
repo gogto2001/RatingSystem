@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CommentService {
 
-    void addComment(Long sellerId, CommentCreateRequest request);
+    CommentResponse createComment(Long sellerId, CommentCreateRequest request);
 
-    List<CommentResponse> getApprovedComments(Long sellerId);
+    List<CommentResponse> getApprovedCommentsForSeller(Long sellerId);
 }

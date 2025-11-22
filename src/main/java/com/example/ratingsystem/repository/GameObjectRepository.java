@@ -11,5 +11,4 @@ public interface GameObjectRepository extends JpaRepository<GameObject, Long> {
     List<GameObject> findAllBySeller(User seller);
 
 
-    List<GameObject> findAllByTitleContainingIgnoreCase(String keyword);
 }

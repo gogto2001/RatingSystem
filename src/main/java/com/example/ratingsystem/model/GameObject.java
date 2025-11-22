@@ -1,5 +1,5 @@
 package com.example.ratingsystem.model;
-
+import com.example.ratingsystem.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,27 +11,23 @@ import java.time.LocalDateTime;
 @Table(name = "game_objects")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class GameObject {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(nullable = false, length = 2000)
     private String text;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "seller_id")
+    @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
     @CreationTimestamp
@@ -39,6 +35,5 @@ public class GameObject {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
     private LocalDateTime updatedAt;
 }

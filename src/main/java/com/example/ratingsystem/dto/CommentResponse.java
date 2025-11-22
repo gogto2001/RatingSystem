@@ -10,10 +10,12 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 public class CommentResponse {
+
     private Long id;
     private String message;
-    private int rating;
-    private boolean approved;
+    private Integer rating;
     private Long authorId;
+    private Long sellerId;
+    private boolean approved;
     private LocalDateTime createdAt;
 }

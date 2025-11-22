@@ -12,24 +12,24 @@ import java.util.List;
 @RequestMapping("/admin/comments")
 @RequiredArgsConstructor
 public class AdminCommentController {
-    private final AdminCommentService adminCommentService;
 
+    private final AdminCommentService adminCommentService;
 
     @GetMapping("/pending")
     public ResponseEntity<List<CommentResponse>> getPendingComments() {
-        List<CommentResponse> comments = adminCommentService.getNotApprovedComments();
-        return ResponseEntity.ok(comments);
+        List<CommentResponse> responses = adminCommentService.getPendingComments();
+        return ResponseEntity.ok(responses);
     }
 
     @PostMapping("/{commentId}/approve")
-    public ResponseEntity<Void> approveComment(@PathVariable Long commentId) {
-        adminCommentService.approveComment(commentId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<CommentResponse> approveComment(@PathVariable Long commentId) {
+        CommentResponse response = adminCommentService.approveComment(commentId);
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{commentId}")
-    public void rejectComment(@PathVariable Long commentId) {
+    @PostMapping("/{commentId}/reject")
+    public ResponseEntity<Void> rejectComment(@PathVariable Long commentId) {
         adminCommentService.rejectComment(commentId);
+        return ResponseEntity.noContent().build();
     }
-
 }

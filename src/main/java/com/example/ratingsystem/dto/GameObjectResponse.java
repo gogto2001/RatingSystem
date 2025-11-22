@@ -11,6 +11,7 @@ public class GameObjectResponse {
     private Long id;
     private String title;
     private String text;
+    private Long sellerId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

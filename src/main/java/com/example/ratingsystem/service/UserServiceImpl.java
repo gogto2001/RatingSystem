@@ -4,77 +4,76 @@ import com.example.ratingsystem.dto.LoginRequest;
 import com.example.ratingsystem.dto.LoginResponse;
 import com.example.ratingsystem.dto.RegisterRequest;
 import com.example.ratingsystem.dto.UserResponse;
+import com.example.ratingsystem.exception.BadRequestException;
+import com.example.ratingsystem.exception.ResourceNotFoundException;
 import com.example.ratingsystem.model.Role;
+import com.example.ratingsystem.model.SellerStatus;
 import com.example.ratingsystem.model.User;
 import com.example.ratingsystem.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserResponse register(RegisterRequest request) {
+        // 1) Email uniqueness check
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("User with this email already exists");
+        }
 
-        validateEmailNotUsed(request.getEmail());
+        // 2) შევქმნათ ახალი SELLER default-ად, PENDING სტატუსით
+        User user = User.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.SELLER)                        // default – ყველა რეგისტრირებული არის SELLER
+                .sellerStatus(SellerStatus.PENDING)       // ადმინმა უნდა დააპრუვოს
+                .ratingSum(0)
+                .ratingCount(0)
+                .averageRating(0.0)
+                .verified(false)
+                .build();
 
-        User user = mapToUser(request);
-        userRepository.save(user);
+        User saved = userRepository.save(user);
 
-        return mapToUserResponse(user);
+        return mapToUserResponse(saved);
     }
 
     @Override
     public LoginResponse login(LoginRequest request) {
+        // 1) ვიპოვოთ user email-ით
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
-        User user = findUserByEmail(request.getEmail());
-
+        // 2) შევამოწმოთ პაროლი
         validatePassword(request.getPassword(), user.getPassword());
 
+        // 3) დავაბრუნოთ მარტივი LoginResponse (ტოკენები არ გვჭირდება ამ დავალებაში)
         return mapToLoginResponse(user);
     }
 
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
         return mapToUserResponse(user);
     }
 
-
-    private void validateEmailNotUsed(String email) {
-        if (userRepository.existsByEmail(email.toLowerCase())) {
-            throw new RuntimeException("Email already registered");
-        }
-    }
-
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
-    }
+    // ===================== private helpers =====================
 
     private void validatePassword(String rawPassword, String encodedPassword) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new RuntimeException("Invalid credentials");
+            throw new BadRequestException("Invalid email or password");
         }
-    }
-
-    private User mapToUser(RegisterRequest request) {
-        return User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail().toLowerCase())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.SELLER)
-                .verified(false)
-                .build();
     }
 
     private UserResponse mapToUserResponse(User user) {
@@ -84,6 +83,7 @@ public class UserServiceImpl implements UserService{
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .sellerStatus(user.getSellerStatus().name())
                 .build();
     }
 
@@ -95,6 +95,4 @@ public class UserServiceImpl implements UserService{
                 .message("Login successful")
                 .build();
     }
-
-
 }

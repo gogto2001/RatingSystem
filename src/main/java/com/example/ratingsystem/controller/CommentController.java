@@ -3,33 +3,34 @@ package com.example.ratingsystem.controller;
 import com.example.ratingsystem.dto.CommentCreateRequest;
 import com.example.ratingsystem.dto.CommentResponse;
 import com.example.ratingsystem.service.CommentService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/comments")
+@RequestMapping("/users/{sellerId}/comments")
 @RequiredArgsConstructor
 public class CommentController {
+
     private final CommentService commentService;
 
-    @PostMapping("/seller/{sellerId}")
-    public ResponseEntity<Void> addComment(
-            @PathVariable @Valid Long sellerId,
-            @RequestBody CommentCreateRequest request) {
-
-        commentService.addComment(sellerId, request);
-        return ResponseEntity.ok().build();
+    @PostMapping
+    public ResponseEntity<CommentResponse> addComment(
+            @PathVariable Long sellerId,
+            @RequestBody CommentCreateRequest request
+    ) {
+        CommentResponse response = commentService.createComment(sellerId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/seller/{sellerId}")
+    @GetMapping
     public ResponseEntity<List<CommentResponse>> getApprovedComments(
-            @PathVariable Long sellerId) {
-
-        List<CommentResponse> comments = commentService.getApprovedComments(sellerId);
-        return ResponseEntity.ok(comments);
+            @PathVariable Long sellerId
+    ) {
+        List<CommentResponse> responses = commentService.getApprovedCommentsForSeller(sellerId);
+        return ResponseEntity.ok(responses);
     }
 }

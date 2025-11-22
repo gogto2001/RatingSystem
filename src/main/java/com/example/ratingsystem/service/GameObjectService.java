@@ -7,9 +7,11 @@ import java.util.List;
 
 
 public interface GameObjectService {
-    void createObject(Long sellerId, GameObjectCreateRequest request);
+    GameObjectResponse createGameObject(GameObjectCreateRequest request);
 
-    List<GameObjectResponse> getObjectsForSeller(Long sellerId);
+    GameObjectResponse updateGameObject(Long id, GameObjectCreateRequest request);
 
-    GameObjectResponse getObjectById(Long objectId);
+    void deleteGameObject(Long id, Long sellerId);
+
+    List<GameObjectResponse> getObjectsBySeller(Long sellerId);
 }
