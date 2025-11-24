@@ -34,13 +34,13 @@ public class AdminCommentServiceImpl implements AdminCommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
 
         if (comment.isApproved()) {
-            // უკვე დამტკიცებულია — უბრალოდ ვაბრუნებთ
+
             return mapToCommentResponse(comment);
         }
 
         comment.setApproved(true);
 
-        // განვაახლოთ სელერის რეიტინგი
+
         User seller = comment.getSeller();
 
         int newRatingSum = seller.getRatingSum() + comment.getRating();
@@ -51,8 +51,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
         seller.setRatingCount(newRatingCount);
         seller.setAverageRating(newAverage);
 
-        // @Transactional-ის გამო, ცალკე save Seller/Comment-ზე აუცილებელი არ არის,
-        // მაგრამ თუ გინდა უფრო მკაფიოდ:
+
         userRepository.save(seller);
         commentRepository.save(comment);
 
@@ -65,11 +64,11 @@ public class AdminCommentServiceImpl implements AdminCommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment not found with id: " + commentId));
 
-        // რეიტინგზე არაფერი არ ვკეთებთ, უბრალოდ ვშლით ან ვინახავთ როგორც rejected
+
         commentRepository.delete(comment);
     }
 
-    // ================== private helper ==================
+
 
     private CommentResponse mapToCommentResponse(Comment comment) {
         return CommentResponse.builder()

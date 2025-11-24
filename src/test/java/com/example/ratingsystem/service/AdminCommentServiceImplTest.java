@@ -22,7 +22,7 @@ class AdminCommentServiceImplTest {
 
     @Test
     void approveComment_updatesSellerRating() {
-        // Arrange
+
         User seller = new User();
         seller.setId(1L);
         seller.setRatingSum(10);
@@ -38,10 +38,10 @@ class AdminCommentServiceImplTest {
         Mockito.when(commentRepository.save(any(Comment.class))).thenAnswer(i -> i.getArguments()[0]);
         Mockito.when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
+
         CommentResponse response = adminService.approveComment(5L);
 
-        // Assert
+
         assertTrue(response.isApproved());
         assertEquals(15, seller.getRatingSum());
         assertEquals(3, seller.getRatingCount());

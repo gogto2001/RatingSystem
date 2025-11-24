@@ -23,13 +23,13 @@ public class Comment {
     private String message;
 
     @Column(nullable = false)
-    private Integer rating; // 1–5 ან 1–10, როგორც შენთან არის შეთანხმებული
+    private Integer rating;
 
-    // ვინ დატოვა კომენტარი (ანონიმიც შეიძლება იყოს, უბრალოდ ID ვინმეს მიენიჭოს)
+
     @Column(nullable = false)
     private Long authorId;
 
-    // ვისთვის არის კომენტარი — სელერი
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;

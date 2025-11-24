@@ -24,11 +24,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentResponse createComment(Long sellerId, CommentCreateRequest request) {
-        // 1) მოვძებნოთ სელერი
+
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + sellerId));
 
-        // 2) შევამოწმოთ რომ ის რეალურად SELLER-ია და APPROVED
+
         if (seller.getRole() != Role.SELLER) {
             throw new BadRequestException("User with id " + sellerId + " is not a seller");
         }
@@ -37,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
             throw new BadRequestException("Seller with id " + sellerId + " is not approved");
         }
 
-        // 3) მარტივი ვალიდაცია rating-ზე
+
         if (request.getRating() == null || request.getRating() < 1 || request.getRating() > 5) {
             throw new BadRequestException("Rating must be between 1 and 5");
         }
@@ -46,18 +46,18 @@ public class CommentServiceImpl implements CommentService {
             throw new BadRequestException("AuthorId is required");
         }
 
-        // 4) შევქმნათ Comment ენტიტი
+
         Comment comment = Comment.builder()
                 .message(request.getMessage())
                 .rating(request.getRating())
                 .authorId(request.getAuthorId())
                 .seller(seller)
-                .approved(false) // admin-ს უნდა დაადასტუროს
+                .approved(false)
                 .build();
 
         Comment saved = commentRepository.save(comment);
 
-        // 5) დავაბრუნოთ DTO
+
         return mapToCommentResponse(saved);
     }
 
@@ -73,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
-    // ================== private helper ==================
+
 
     private CommentResponse mapToCommentResponse(Comment comment) {
         return CommentResponse.builder()

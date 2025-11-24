@@ -16,7 +16,7 @@ public class GameObjectController {
 
     private final GameObjectService gameObjectService;
 
-    // POST /object
+
     @PostMapping
     public ResponseEntity<GameObjectResponse> create(
             @RequestBody GameObjectCreateRequest request
@@ -25,7 +25,7 @@ public class GameObjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // PUT /object/{id}
+
     @PutMapping("/{id}")
     public ResponseEntity<GameObjectResponse> update(
             @PathVariable Long id,
@@ -35,7 +35,7 @@ public class GameObjectController {
         return ResponseEntity.ok(response);
     }
 
-    // DELETE /object/{id}?sellerId=5
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id,
@@ -45,7 +45,7 @@ public class GameObjectController {
         return ResponseEntity.noContent().build();
     }
 
-    // GET /object?sellerId=5
+
     @GetMapping
     public ResponseEntity<List<GameObjectResponse>> getAll(
             @RequestParam Long sellerId

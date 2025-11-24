@@ -27,14 +27,14 @@ public class GameObjectServiceImpl implements GameObjectService {
     @Override
     public GameObjectResponse createGameObject(GameObjectCreateRequest request) {
 
-        // 1) მოვძებნოთ seller
+
         User seller = userRepository.findById(request.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
-        // 2) შევამოწმოთ რომ მართლაც SELLER-ია და APPROVED
+
         validateSeller(seller);
 
-        // 3) შევქმნათ game object
+
         GameObject game = GameObject.builder()
                 .title(request.getTitle())
                 .text(request.getText())
@@ -55,7 +55,7 @@ public class GameObjectServiceImpl implements GameObjectService {
         User seller = userRepository.findById(request.getSellerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
-        // game object-ის შეცვლა მხოლოდ ავტორს შეუძლია
+
         if (!Objects.equals(game.getSeller().getId(), seller.getId())) {
             throw new BadRequestException("Only the owner can update this object");
         }
@@ -79,7 +79,7 @@ public class GameObjectServiceImpl implements GameObjectService {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found"));
 
-        // მხოლოდ ავტორს შეუძლია წაშლა
+
         if (!Objects.equals(game.getSeller().getId(), seller.getId())) {
             throw new BadRequestException("Only the owner can delete this object");
         }
@@ -102,7 +102,6 @@ public class GameObjectServiceImpl implements GameObjectService {
                 .toList();
     }
 
-    // =================== private helper methods =========================
 
     private void validateSeller(User seller) {
         if (seller.getRole() != Role.SELLER) {

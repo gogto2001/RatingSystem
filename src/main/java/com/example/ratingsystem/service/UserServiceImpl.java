@@ -23,19 +23,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse register(RegisterRequest request) {
-        // 1) Email uniqueness check
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("User with this email already exists");
         }
 
-        // 2) შევქმნათ ახალი SELLER default-ად, PENDING სტატუსით
+
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.SELLER)                        // default – ყველა რეგისტრირებული არის SELLER
-                .sellerStatus(SellerStatus.PENDING)       // ადმინმა უნდა დააპრუვოს
+                .role(Role.SELLER)
+                .sellerStatus(SellerStatus.PENDING)
                 .ratingSum(0)
                 .ratingCount(0)
                 .averageRating(0.0)
@@ -49,14 +49,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        // 1) ვიპოვოთ user email-ით
+
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid email or password"));
 
-        // 2) შევამოწმოთ პაროლი
+
         validatePassword(request.getPassword(), user.getPassword());
 
-        // 3) დავაბრუნოთ მარტივი LoginResponse (ტოკენები არ გვჭირდება ამ დავალებაში)
+
         return mapToLoginResponse(user);
     }
 
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
         return mapToUserResponse(user);
     }
 
-    // ===================== private helpers =====================
+    
 
     private void validatePassword(String rawPassword, String encodedPassword) {
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {

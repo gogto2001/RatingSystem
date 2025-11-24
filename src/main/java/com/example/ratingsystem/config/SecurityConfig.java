@@ -28,30 +28,30 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // REST API / Postman სტილი – CSRF არ გვჭირდება
+
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(auth -> auth
-                        // რეგისტრაცია + ლოგინი ყველასთვის ხელმისაწვდომია
+
                         .requestMatchers("/auth/**").permitAll()
 
-                        // კომენტარების ნახვა ყველას შეუძლია
+
                         .requestMatchers(HttpMethod.GET, "/users/*/comments").permitAll()
 
-                        // სელერის სტატისტიკა და TOP sellers – public (ან სურვილის მიხედვით)
+
                         .requestMatchers(HttpMethod.GET, "/seller/**").permitAll()
 
-                        // admin-ის endpoint-ები – მხოლოდ ADMIN როლისთვის
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                        // სხვა ყველაფერი – ავტორიზაციას ითხოვს
+
                         .anyRequest().authenticated()
                 )
 
-                // მარტივი HTTP Basic ავტორიზაცია (JWT არ გვჭირდება ამ ამოცანაში)
+
                 .httpBasic(Customizer.withDefaults());
 
-        // ავუთენტიკაციის პროვაიდერი
+
         http.authenticationProvider(authenticationProvider());
 
         return http.build();
@@ -61,7 +61,7 @@ public class SecurityConfig {
     public AuthenticationProvider authenticationProvider() {
 
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService); // ჩვენი CustomUserDetailsService
+        provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }

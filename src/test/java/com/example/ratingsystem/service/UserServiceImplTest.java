@@ -36,10 +36,10 @@ class UserServiceImplTest {
         Mockito.when(userRepository.save(any(User.class)))
                 .thenAnswer(i -> i.getArguments()[0]);
 
-        // Act
+
         UserResponse response = userService.register(req);
 
-        // Assert
+
         assertEquals("test@mail.com", response.getEmail());
         assertEquals("SELLER", response.getRole());
         assertEquals("PENDING", response.getSellerStatus());

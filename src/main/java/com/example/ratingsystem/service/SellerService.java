@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface SellerService {
 
-    // ერთი სელერის სტატისტიკა
+
     SellerStatisticsResponse getSellerStatistics(Long sellerId);
 
-    // ✅ TOP Sellers-ების სია
+
     List<SellerStatisticsResponse> getTopSellers(int limit);
 }
