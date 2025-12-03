@@ -33,3 +33,39 @@ Includes authentication, authorization, admin panel functionality, and seller an
 The application follows a clean layered structure:
 
 
+ Database Schema
+
+    USER {
+        BIGINT id PK
+        STRING first_name
+        STRING last_name
+        STRING email
+        STRING password
+        STRING role
+        STRING seller_status
+        INT rating_sum
+        INT rating_count
+        DOUBLE average_rating
+    }
+
+    COMMENT {
+        BIGINT id PK
+        STRING text
+        INT rating
+        BOOLEAN approved
+        DATETIME created_at
+        BIGINT author_id FK
+        BIGINT target_seller_id FK
+    }
+
+    GAME_OBJECT {
+        BIGINT id PK
+        STRING title
+        STRING description
+        DATETIME created_at
+        BIGINT seller_id FK
+    }
+
+    USER ||--o{ COMMENT : "writes"
+    USER ||--o{ COMMENT : "receives"
+    USER ||--o{ GAME_OBJECT : "owns"
